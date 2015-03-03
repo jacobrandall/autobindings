@@ -96,7 +96,7 @@ func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValu
 func (t *{{.structName}}) ToDynamoMap() *map[string]dynamodb.AttributeValue {
   m := make(map[string]dynamodb.AttributeValue)
   {{range $field, $mapping := .mappings}}
-    if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
+    if t.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
       m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*t.{{$field}})} {{else if eq $mapping.Type "*int64"}}
       m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
       m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
