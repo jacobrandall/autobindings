@@ -18,10 +18,14 @@ type {{.structName}}Create struct {
 	{{$field}} {{$mapping.Type}} {{$mapping.RestrictedTags}}{{end}}{{end}}
 }
 
+var _ {{.structName}}Creater = (*{{.structName}}Create)(nil) // Forces compile time checking of the interface
+
 type {{.structName}}Update struct {
 	{{range $field, $mapping := .mappings}}{{if eq $mapping.Update true }}
 	{{$field}} {{$mapping.Type}} {{$mapping.RestrictedTags}}{{end}}{{end}}
 }
+
+var _ {{.structName}}Updater = (*{{.structName}}Update)(nil) // Forces compile time checking of the interface
 
 func ({{.variableName}} *{{.structName}}Create) FieldMap() binding.FieldMap {
 	return binding.FieldMap{ {{$vname := .variableName}}{{range $field, $mapping := .mappings}}{{if eq $mapping.Create true }}
@@ -54,30 +58,6 @@ func (t *{{.structName}}Create) ToDynamoMap() *map[string]dynamodb.AttributeValu
       m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*t.{{$field}})} {{end}}
     }{{end}}{{end}}
   return &m
-}
-
-func (ts *{{.structName}}Create) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
-  t := &Title{}
-  {{range $field, $mapping := .mappings}} {{if eq $mapping.Create true }}
-    {{if eq $mapping.Type "*string"}}
-      if (*m)["{{$field}}"].S != nil {
-      t.{{$field}} = (*m)["{{$field}}"].S {{else if eq $mapping.Type "*int64"}}
-      if (*m)["{{$field}}"].N != nil {
-      i, err := strconv.ParseInt(*((*m)["{{$field}}"].N), 10, 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Int64")
-  		}
-  		t.{{$field}} = &i {{else if eq $mapping.Type "*float64"}}
-      if (*m)["{{$field}}"].N != nil {
-      f, err := strconv.ParseFloat(*((*m)["{{$field}}"].N), 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Float64")
-  		}
-  		t.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
-      if (*m)["{{$field}}"].BOOL != nil {
-        t.{{$field}} = (*m)["{{$field}}"].BOOL {{end}}
-    }{{end}}{{end}}
-  return t, nil
 }
 
 func ({{.variableName}} *{{.structName}}Update) FieldMap() binding.FieldMap {
@@ -113,9 +93,9 @@ func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValu
   return &m
 }
 
-func (ts *{{.structName}}Update) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
+func (ts *{{.structName}}) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
   t := &Title{}
-  {{range $field, $mapping := .mappings}} {{if eq $mapping.Update true }}
+  {{range $field, $mapping := .mappings}}
     {{if eq $mapping.Type "*string"}}
       if (*m)["{{$field}}"].S != nil {
       t.{{$field}} = (*m)["{{$field}}"].S {{else if eq $mapping.Type "*int64"}}
@@ -133,7 +113,7 @@ func (ts *{{.structName}}Update) FromDynamoMap(m *map[string]dynamodb.AttributeV
   		t.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
       if (*m)["{{$field}}"].BOOL != nil {
         t.{{$field}} = (*m)["{{$field}}"].BOOL {{end}}
-    }{{end}}{{end}}
+    }{{end}}
   return t, nil
 }
 
@@ -160,10 +140,14 @@ type {{$root.structName}}{{$mediaType}}Create struct {
 	{{$field}} {{$mapping.Type}} {{$mapping.RestrictedTags}}{{end}}{{end}}{{end}}
 }
 
+var _ {{$root.structName}}Creater = (*{{$root.structName}}{{$mediaType}}Create)(nil) // Forces compile time checking of the interface
+
 type {{$root.structName}}{{$mediaType}}Update struct {
 	{{range $field, $mapping := $root.mappings}}{{if $mapping.HasMediaType $mediaType}}{{if eq $mapping.Update true }}
 	{{$field}} {{$mapping.Type}} {{$mapping.RestrictedTags}}{{end}}{{end}}{{end}}
 }
+
+var _ {{$root.structName}}Updater = (*{{$root.structName}}{{$mediaType}}Update)(nil) // Forces compile time checking of the interface
 
 func ({{$root.variableName}} *{{$root.structName}}{{$mediaType}}Create) FieldMap() binding.FieldMap {
 	return binding.FieldMap{ {{$vname := $root.variableName}}{{range $field, $mapping := $root.mappings}}{{if $mapping.HasMediaType $mediaType}}{{if eq $mapping.Create true }}
@@ -196,30 +180,6 @@ func (a *{{$root.structName}}{{$mediaType}}Create) ToDynamoMap() *map[string]dyn
       m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
     }{{end}}{{end}}{{end}}
   return &m
-}
-
-func (as *{{$root.structName}}{{$mediaType}}Create) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
-  a := &Asset{}
-  {{range $field, $mapping := $root.mappings}} {{if $mapping.HasMediaType $mediaType}} {{if eq $mapping.Create true }}
-    {{if eq $mapping.Type "*string"}}
-      if (*m)["{{$field}}"].S != nil {
-      a.{{$field}} = (*m)["{{$field}}"].S {{else if eq $mapping.Type "*int64"}}
-      if (*m)["{{$field}}"].N != nil {
-      i, err := strconv.ParseInt(*((*m)["{{$field}}"].N), 10, 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Int64")
-  		}
-  		a.{{$field}} = &i {{else if eq $mapping.Type "*float64"}}
-      if (*m)["{{$field}}"].N != nil {
-      f, err := strconv.ParseFloat(*((*m)["{{$field}}"].N), 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Float64")
-  		}
-  		a.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
-      if (*m)["{{$field}}"].BOOL != nil {
-        a.{{$field}} = (*m)["{{$field}}"].BOOL {{end}}
-    }{{end}}{{end}}{{end}}
-  return a, nil
 }
 
 func ({{$root.variableName}} *{{$root.structName}}{{$mediaType}}Update) FieldMap() binding.FieldMap {
@@ -255,9 +215,11 @@ func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]dyn
   return &m
 }
 
-func (as *{{$root.structName}}{{$mediaType}}Update) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
+{{end}}
+
+func (as *{{$root.structName}}) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
   a := &Asset{}
-  {{range $field, $mapping := $root.mappings}} {{if $mapping.HasMediaType $mediaType}} {{if eq $mapping.Update true }}
+  {{range $field, $mapping := $root.mappings}}
     {{if eq $mapping.Type "*string"}}
       if (*m)["{{$field}}"].S != nil {
       a.{{$field}} = (*m)["{{$field}}"].S {{else if eq $mapping.Type "*int64"}}
@@ -275,116 +237,11 @@ func (as *{{$root.structName}}{{$mediaType}}Update) FromDynamoMap(m *map[string]
   		a.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
       if (*m)["{{$field}}"].BOOL != nil {
         a.{{$field}} = (*m)["{{$field}}"].BOOL {{end}}
-    }{{end}}{{end}}{{end}}
+    }{{end}}
   return a, nil
 }
 
-{{end}}
 `
-
-/*
-func dynamoMapToAssetModel(m *map[string]dynamodb.AttributeValue) (*models.Asset, error) {
-	a := &models.Asset{}
-	if (*m)["Id"].S != nil {
-		a.Id = (*m)["Id"].S
-	}
-	if (*m)["TitleId"].S != nil {
-		a.TitleId = (*m)["TitleId"].S
-	}
-	if (*m)["CreatedAt"].S != nil {
-		a.CreatedAt = (*m)["CreatedAt"].S
-	}
-	if (*m)["UpdatedAt"].S != nil {
-		a.UpdatedAt = (*m)["UpdatedAt"].S
-	}
-	if (*m)["MediaType"].S != nil {
-		a.MediaType = (*m)["MediaType"].S
-	}
-	if (*m)["Variant"].S != nil {
-		a.Variant = (*m)["Variant"].S
-	}
-	if (*m)["Duration"].N != nil {
-		sd, err := strconv.ParseInt(*((*m)["Duration"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertDurationAtStringUint
-		}
-		ud := uint(sd)
-		a.Duration = &ud
-	}
-	if (*m)["MediaURL"].S != nil {
-		a.MediaURL = (*m)["MediaURL"].S
-	}
-	if (*m)["AtomMapURL"].S != nil {
-		a.AtomMapURL = (*m)["AtomMapURL"].S
-	}
-	if (*m)["Width"].N != nil {
-		width, err := strconv.ParseInt(*((*m)["Width"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertWidthStringInt
-		}
-		a.Width = &width
-	}
-	if (*m)["Height"].N != nil {
-		height, err := strconv.ParseInt(*((*m)["Height"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertHeightStringInt
-		}
-		a.Height = &height
-	}
-	if (*m)["FrameRate"].N != nil {
-		frameRate, err := strconv.ParseFloat(*((*m)["FrameRate"].N), 64)
-		if err != nil {
-			return nil, ErrAssetConvertFrameRateStringFloat64
-		}
-		a.FrameRate = &frameRate
-	}
-	if (*m)["GopInterval"].N != nil {
-		gopInterval, err := strconv.ParseInt(*((*m)["GopInterval"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertGopIntervalStringInt
-		}
-		a.GopInterval = &gopInterval
-	}
-	if (*m)["SampleRate"].N != nil {
-		//sampleRate, err := strconv.ParseInt(s, 10, 64)
-		sampleRate, err := strconv.ParseInt(*((*m)["SampleRate"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertSampleRateStringInt
-		}
-		a.SampleRate = &sampleRate
-	}
-	if (*m)["AudioConfig"].S != nil {
-		a.AudioConfig = (*m)["AudioConfig"].S
-	}
-	if (*m)["Bitrate"].N != nil {
-		bitrate, err := strconv.ParseInt(*((*m)["Bitrate"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertBitRateStringInt
-		}
-		a.Bitrate = &bitrate
-	}
-	if (*m)["Codec"].S != nil {
-		a.Codec = (*m)["Codec"].S
-	}
-	if (*m)["Profile"].S != nil {
-		a.Profile = (*m)["Profile"].S
-	}
-	if (*m)["FragRate"].N != nil {
-		fragRate, err := strconv.ParseInt(*((*m)["FragRate"].N), 10, 64)
-		if err != nil {
-			return nil, ErrAssetConvertFragRateStringInt
-		}
-		a.FragRate = &fragRate
-	}
-	if (*m)["Language"].S != nil {
-		a.Language = (*m)["Language"].S
-	}
-	if (*m)["Dialect"].S != nil {
-		a.Dialect = (*m)["Dialect"].S
-	}
-	return a, nil
-}
-*/
 
 var baseFieldMap = `func ({{.variableName}} *{{.structName}}) FieldMap() binding.FieldMap {
 	return binding.FieldMap{ {{$vname := .variableName}}{{range $field, $mapping := .mappings}}
