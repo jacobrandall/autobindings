@@ -99,7 +99,7 @@ func generateFieldMap(fileName string) {
 						if mapping == "-" {
 							continue
 						}
-						mappings[name].JSONTags = mapping
+						mappings[name].JSONTags = strings.TrimSuffix(mapping, ",omitempty")
 						mappings[name].RestrictedTags = fmt.Sprintf("`json:\"%s\"`", mapping)
 					} else if strings.Contains(tag, "binding") {
 						mapping := strings.Replace(tag, "binding:\"", "", -1)
