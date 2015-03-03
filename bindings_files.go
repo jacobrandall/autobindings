@@ -81,14 +81,14 @@ func (t {{.structName}}Update) Update() {
 
 }
 
-func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValue {
-  m := make(map[string]dynamodb.AttributeValue)
+func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValueUpdate {
+  m := make(map[string]dynamodb.AttributeValueUpdate)
   {{range $field, $mapping := .mappings}}{{if eq $mapping.Update true }}
     if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})}} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})}} {{end}}
     }{{end}}{{end}}
   return &m
 }
@@ -203,14 +203,14 @@ func (a *{{$root.structName}}{{$mediaType}}Update) Update() {
 
 }
 
-func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValue {
-  m := make(map[string]dynamodb.AttributeValue)
+func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValueUpdate {
+  m := make(map[string]dynamodb.AttributeValueUpdate)
   {{range $field, $mapping := $root.mappings}}{{if $mapping.HasMediaType $mediaType}}{{if eq $mapping.Update true }}
     if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})}} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})}} {{end}}
     }{{end}}{{end}}{{end}}
   return &m
 }
