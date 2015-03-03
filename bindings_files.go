@@ -93,6 +93,18 @@ func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValu
   return &m
 }
 
+func (t *{{.structName}}) ToDynamoMap() *map[string]dynamodb.AttributeValue {
+  m := make(map[string]dynamodb.AttributeValue)
+  {{range $field, $mapping := .mappings}}
+    if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*t.{{$field}})} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*t.{{$field}})} {{end}}
+    }{{end}}
+  return &m
+}
+
 func {{.structName}}FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
   t := &Title{}
   {{range $field, $mapping := .mappings}}
@@ -216,6 +228,18 @@ func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]dyn
 }
 
 {{end}}
+
+func (a *{{$root.structName}}) ToDynamoMap() *map[string]dynamodb.AttributeValue {
+  m := make(map[string]dynamodb.AttributeValue)
+  {{range $field, $mapping := $root.mappings}}
+    if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
+    }{{end}}
+  return &m
+}
 
 func {{$root.structName}}FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
   a := &Asset{}
