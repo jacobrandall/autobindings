@@ -93,7 +93,7 @@ func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValu
   return &m
 }
 
-func (ts *{{.structName}}) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
+func {{.structName}}FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
   t := &Title{}
   {{range $field, $mapping := .mappings}}
     {{if eq $mapping.Type "*string"}}
@@ -217,7 +217,7 @@ func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]dyn
 
 {{end}}
 
-func (as *{{$root.structName}}) FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
+func {{$root.structName}}FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
   a := &Asset{}
   {{range $field, $mapping := $root.mappings}}
     {{if eq $mapping.Type "*string"}}
