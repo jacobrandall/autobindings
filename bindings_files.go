@@ -48,23 +48,6 @@ func (t {{.structName}}Create) Create() {
 
 }
 
-func (a {{.structName}}Create) Validate(req *http.Request, errs binding.Errors) binding.Errors {
-	var fieldsProvided bool = false
-	{{range $field, $mapping := .mappings}}{{if eq $mapping.Create true }}
-	if a.{{$field}} != nil {
-			fieldsProvided = true
-	}{{end}}{{end}}
-  if fieldsProvided == false {
-      errs = append(errs, binding.Error{
-          FieldNames:     []string{},
-          Classification: "NoFieldsProvidedError",
-          Message:        "No valid fields have been provided",
-      })
-  }
-  return errs
-}
-
-
 func (t *{{.structName}}Create) ToDynamoMap() *map[string]dynamodb.AttributeValue {
   m := make(map[string]dynamodb.AttributeValue)
   {{range $field, $mapping := .mappings}}{{if eq $mapping.Create true }}
@@ -214,22 +197,6 @@ func (a {{$root.structName}}{{$mediaType}}Create) String() string {
 
 func (a *{{$root.structName}}{{$mediaType}}Create) Create() {
 
-}
-
-func (a {{$root.structName}}{{$mediaType}}Create) Validate(req *http.Request, errs binding.Errors) binding.Errors {
-	var fieldsProvided bool = false
-	{{range $field, $mapping := $root.mappings}}{{if $mapping.HasMediaType $mediaType}}{{if eq $mapping.Create true }}
-	if a.{{$field}} != nil {
-			fieldsProvided = true
-	}{{end}}{{end}}{{end}}
-  if fieldsProvided == false {
-      errs = append(errs, binding.Error{
-          FieldNames:     []string{},
-          Classification: "NoFieldsProvidedError",
-          Message:        "No valid fields have been provided",
-      })
-  }
-  return errs
 }
 
 func (a *{{$root.structName}}{{$mediaType}}Create) ToDynamoMap() *map[string]dynamodb.AttributeValue {
