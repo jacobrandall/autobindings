@@ -139,8 +139,8 @@ func generateFieldMap(fileName string) {
 		var bindingsFile string
 		if structName == "Asset" {
 			bindingsFile = bindingsFileAsset
-		} else if structName == "Title" {
-			bindingsFile = bindingsFileTitle
+		} else {
+			bindingsFile = bindingsFileGeneric
 		}
 		t := template.Must(template.New("bindings").Parse(bindingsFile))
 		err = t.Execute(content, map[string]interface{}{
