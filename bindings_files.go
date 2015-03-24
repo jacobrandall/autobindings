@@ -48,14 +48,14 @@ func (t {{.structName}}Create) Create() {
 
 }
 
-func (t *{{.structName}}Create) ToDynamoMap() *map[string]dynamodb.AttributeValue {
-  m := make(map[string]dynamodb.AttributeValue)
+func (t *{{.structName}}Create) ToDynamoMap() *map[string]*dynamodb.AttributeValue {
+  m := make(map[string]*dynamodb.AttributeValue)
   {{range $field, $mapping := .mappings}}{{if eq $mapping.Create true }}
     if t.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*t.{{$field}})} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*t.{{$field}})} {{end}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{S: aws.String(*t.{{$field}})} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{BOOL: aws.Boolean(*t.{{$field}})} {{end}}
     }{{end}}{{end}}
   return &m
 }
@@ -98,51 +98,54 @@ func (a {{.structName}}Update) Validate(req *http.Request, errs binding.Errors) 
 }
 
 
-func (a *{{.structName}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValueUpdate {
-  m := make(map[string]dynamodb.AttributeValueUpdate)
+func (a *{{.structName}}Update) ToDynamoMap() *map[string]*dynamodb.AttributeValueUpdate {
+  m := make(map[string]*dynamodb.AttributeValueUpdate)
   {{range $field, $mapping := .mappings}}{{if eq $mapping.Update true }}
     if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})}} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})}} {{end}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})}} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})}} {{end}}
     }{{end}}{{end}}
   return &m
 }
 
-func (t *{{.structName}}) ToDynamoMap() *map[string]dynamodb.AttributeValue {
-  m := make(map[string]dynamodb.AttributeValue)
+func (t *{{.structName}}) ToDynamoMap() *map[string]*dynamodb.AttributeValue {
+  m := make(map[string]*dynamodb.AttributeValue)
   {{range $field, $mapping := .mappings}}
     if t.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*t.{{$field}})} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*t.{{$field}})} {{end}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{S: aws.String(*t.{{$field}})} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *t.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{BOOL: aws.Boolean(*t.{{$field}})} {{end}}
     }{{end}}
   return &m
 }
 
-func {{.structName}}FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Title, error) {
+func {{.structName}}FromDynamoMap(m *map[string]*dynamodb.AttributeValue) (*Title, error) {
   t := &Title{}
   {{range $field, $mapping := .mappings}}
-    {{if eq $mapping.Type "*string"}}
-      if (*m)["{{$field}}"].S != nil {
-      t.{{$field}} = (*m)["{{$field}}"].S {{else if eq $mapping.Type "*int64"}}
-      if (*m)["{{$field}}"].N != nil {
-      i, err := strconv.ParseInt(*((*m)["{{$field}}"].N), 10, 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Int64")
-  		}
-  		t.{{$field}} = &i {{else if eq $mapping.Type "*float64"}}
-      if (*m)["{{$field}}"].N != nil {
-      f, err := strconv.ParseFloat(*((*m)["{{$field}}"].N), 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Float64")
-  		}
-  		t.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
-      if (*m)["{{$field}}"].BOOL != nil {
-        t.{{$field}} = (*m)["{{$field}}"].BOOL {{end}}
-    }{{end}}
+		if m != nil && (*m)["{{$field}}"] != nil {
+			av := *(*m)["{{$field}}"]
+	    {{if eq $mapping.Type "*string"}}
+	      if av.S != nil {
+	      t.{{$field}} = av.S {{else if eq $mapping.Type "*int64"}}
+	      if av.N != nil {
+	      i, err := strconv.ParseInt(*av.N, 10, 64)
+	  		if err != nil {
+	  			return nil, NewConvertError("{{$field}}", "String", "Int64")
+	  		}
+	  		t.{{$field}} = &i {{else if eq $mapping.Type "*float64"}}
+	      if av.N != nil {
+	      f, err := strconv.ParseFloat(*av.N, 64)
+	  		if err != nil {
+	  			return nil, NewConvertError("{{$field}}", "String", "Float64")
+	  		}
+	  		t.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
+	      if av.BOOL != nil {
+	        t.{{$field}} = av.BOOL {{end}}
+	    }
+		}{{end}}
   return t, nil
 }
 
@@ -199,14 +202,14 @@ func (a *{{$root.structName}}{{$mediaType}}Create) Create() {
 
 }
 
-func (a *{{$root.structName}}{{$mediaType}}Create) ToDynamoMap() *map[string]dynamodb.AttributeValue {
-  m := make(map[string]dynamodb.AttributeValue)
+func (a *{{$root.structName}}{{$mediaType}}Create) ToDynamoMap() *map[string]*dynamodb.AttributeValue {
+  m := make(map[string]*dynamodb.AttributeValue)
   {{range $field, $mapping := $root.mappings}}{{if $mapping.HasMediaType $mediaType}}{{if eq $mapping.Create true }}
     if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
     }{{end}}{{end}}{{end}}
   return &m
 }
@@ -248,53 +251,56 @@ func (a {{$root.structName}}{{$mediaType}}Update) Validate(req *http.Request, er
   return errs
 }
 
-func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]dynamodb.AttributeValueUpdate {
-  m := make(map[string]dynamodb.AttributeValueUpdate)
+func (a *{{$root.structName}}{{$mediaType}}Update) ToDynamoMap() *map[string]*dynamodb.AttributeValueUpdate {
+  m := make(map[string]*dynamodb.AttributeValueUpdate)
   {{range $field, $mapping := $root.mappings}}{{if $mapping.HasMediaType $mediaType}}{{if eq $mapping.Update true }}
     if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})}} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})}} {{end}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})}} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))}} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = &dynamodb.AttributeValueUpdate{Action: aws.String("PUT"), Value: &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})}} {{end}}
     }{{end}}{{end}}{{end}}
   return &m
 }
 
 {{end}}
 
-func (a *{{$root.structName}}) ToDynamoMap() *map[string]dynamodb.AttributeValue {
-  m := make(map[string]dynamodb.AttributeValue)
+func (a *{{$root.structName}}) ToDynamoMap() *map[string]*dynamodb.AttributeValue {
+  m := make(map[string]*dynamodb.AttributeValue)
   {{range $field, $mapping := $root.mappings}}
     if a.{{$field}} != nil { {{if eq $mapping.Type "*string"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
-      m["{{$field}}"] = dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{S: aws.String(*a.{{$field}})} {{else if eq $mapping.Type "*int64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*float64"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{N: aws.String(fmt.Sprintf("%v", *a.{{$field}}))} {{else if eq $mapping.Type "*bool"}}
+      m["{{$field}}"] = &dynamodb.AttributeValue{BOOL: aws.Boolean(*a.{{$field}})} {{end}}
     }{{end}}
   return &m
 }
 
-func {{$root.structName}}FromDynamoMap(m *map[string]dynamodb.AttributeValue) (*Asset, error) {
+func {{$root.structName}}FromDynamoMap(m *map[string]*dynamodb.AttributeValue) (*Asset, error) {
   a := &Asset{}
   {{range $field, $mapping := $root.mappings}}
-    {{if eq $mapping.Type "*string"}}
-      if (*m)["{{$field}}"].S != nil {
-      a.{{$field}} = (*m)["{{$field}}"].S {{else if eq $mapping.Type "*int64"}}
-      if (*m)["{{$field}}"].N != nil {
-      i, err := strconv.ParseInt(*((*m)["{{$field}}"].N), 10, 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Int64")
-  		}
-  		a.{{$field}} = &i {{else if eq $mapping.Type "*float64"}}
-      if (*m)["{{$field}}"].N != nil {
-      f, err := strconv.ParseFloat(*((*m)["{{$field}}"].N), 64)
-  		if err != nil {
-  			return nil, NewConvertError("{{$field}}", "String", "Float64")
-  		}
-  		a.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
-      if (*m)["{{$field}}"].BOOL != nil {
-        a.{{$field}} = (*m)["{{$field}}"].BOOL {{end}}
-    }{{end}}
+		if m != nil && (*m)["{{$field}}"] != nil {
+			av := *(*m)["{{$field}}"]
+	    {{if eq $mapping.Type "*string"}}
+	      if av.S != nil {
+	      a.{{$field}} = av.S {{else if eq $mapping.Type "*int64"}}
+	      if av.N != nil {
+	      i, err := strconv.ParseInt(*av.N, 10, 64)
+	  		if err != nil {
+	  			return nil, NewConvertError("{{$field}}", "String", "Int64")
+	  		}
+	  		a.{{$field}} = &i {{else if eq $mapping.Type "*float64"}}
+	      if av.N != nil {
+	      f, err := strconv.ParseFloat(*av.N, 64)
+	  		if err != nil {
+	  			return nil, NewConvertError("{{$field}}", "String", "Float64")
+	  		}
+	  		a.{{$field}} = &f {{else if eq $mapping.Type "*bool"}}
+	      if av.BOOL != nil {
+	        a.{{$field}} = av.BOOL {{end}}
+	    }
+		}{{end}}
   return a, nil
 }
 
