@@ -128,7 +128,10 @@ func generateFieldMap(fileName string) {
 			}
 		}
 		// opening file for writing content
-		writer, err := os.Create(fmt.Sprintf("%s_bindings.go", strings.ToLower(structName)))
+		splitFileName := strings.Split(fileName, ".")
+		bindingsFileName := fmt.Sprintf("%s_bindings.%s", splitFileName[0], splitFileName[1])
+		log.Printf("Proccessed %s, writing bindings out to %s", fileName, bindingsFileName)
+		writer, err := os.Create(bindingsFileName)
 		if err != nil {
 			log.Printf("Error opening file %v", err)
 			panic(err)
